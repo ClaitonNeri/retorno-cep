@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 TarefaBackground background = new TarefaBackground();
-                String url = "https://blockchain.info/ticker";
+                String url = "https://viacep.com.br/ws/85555000/json/";
                 background.execute(url);
             }
         });
