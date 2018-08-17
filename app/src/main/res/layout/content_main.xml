@@ -11,12 +11,6 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <Button
-        android:id="@+id/btn_recuperar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="RECUPERAR INFORMAÇÕES" />
-
     <TextView
         android:id="@+id/txt_resultado"
         android:layout_width="match_parent"

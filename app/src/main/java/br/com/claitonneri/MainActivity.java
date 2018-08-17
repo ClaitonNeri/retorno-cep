@@ -1,5 +1,6 @@
 package br.com.claitonneri;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -11,8 +12,20 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
+
+    private TextView txtResultado;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,35 +34,69 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        txtResultado = findViewById(R.id.txt_resultado);
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                TarefaBackground background = new TarefaBackground();
+                String url = "https://blockchain.info/ticker";
+                background.execute(url);
             }
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    class TarefaBackground extends AsyncTask<String, Void, String> {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
         }
 
-        return super.onOptionsItemSelected(item);
+        // Neste metodo sera retornado a String do WebService
+        @Override
+        protected String doInBackground(String... strings) {
+
+            String urlRetorno = strings[0];
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            StringBuffer buffer = null;
+
+            // Criar a conexao HTTP
+            try {
+                // Config da conexao
+                URL url = new URL(urlRetorno);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                // Recuperar os dados solicitados (em bytes)
+                inputStream = connection.getInputStream();
+
+                // Converte os dados de Bytes para Caracteres
+                inputStreamReader = new InputStreamReader(inputStream);
+
+                // Converter o objeto inputStreamReader em String
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                buffer = new StringBuffer();
+                String row = "";
+
+                // Adicionando as linhas recuperadas na varivel buffer
+                while((row = bufferedReader.readLine()) != null){
+                    buffer.append(row);
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return buffer.toString();
+        }
+
+        // Neste metodo sera exibido a string retornada no metodo doInBackground()
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            txtResultado.setText(result);
+        }
     }
 }
