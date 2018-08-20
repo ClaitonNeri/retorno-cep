@@ -5,15 +5,21 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +32,7 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
 
     private TextView txtResultado;
+    private EditText edtCep;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        edtCep = findViewById(R.id.edt_cep);
         txtResultado = findViewById(R.id.txt_resultado);
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -41,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 TarefaBackground background = new TarefaBackground();
-                String url = "https://viacep.com.br/ws/85555000/json/";
+                String cep = edtCep.getText().toString();
+
+                String url = "https://viacep.com.br/ws/" + cep + "/json/";
                 background.execute(url);
             }
         });
@@ -96,7 +106,26 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            txtResultado.setText(result);
+
+            // Sera convertido em um objeto JSON para manipular os atributos
+            String logradouro = null;
+            String complemento = null;
+            String bairro = null;
+            String localidade = null;
+            String uf = null;
+
+            try {
+                JSONObject jsonObject = new JSONObject(result);
+                logradouro = jsonObject.getString("logradouro");
+                complemento = jsonObject.getString("complemento");
+                bairro = jsonObject.getString("bairro");
+                localidade = jsonObject.getString("localidade");
+                uf = jsonObject.getString("uf");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            txtResultado.setText("Logradouro: " + logradouro + " Complemento: " + complemento + " Bairro: " + bairro + " Localidade: " + localidade + " UF: " + uf);
         }
     }
 }
